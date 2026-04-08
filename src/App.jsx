@@ -15,15 +15,28 @@ const initialData = {
   done: []
 };
 
+const columnColors = {
+  todo: "bg-yellow-100 border-yellow-300",
+  inProgress: "bg-blue-100 border-blue-300",
+  inReview: "bg-purple-100 border-purple-300",
+  done: "bg-green-100 border-green-300",
+};
+
 export default function KanbanBoard() {
   const [columns, setColumns] = useState(initialData);
   const [newTask, setNewTask] = useState("");
   const [draggedTask, setDraggedTask] = useState(null);
 
   const addTask = () => {
+    console.log("clicked");
     if (!newTask.trim()) return;
-    const task = { id: Date.now(), text: newTask };
-    setColumns({ ...columns, todo: [...columns.todo, task] });
+
+    const task = { 
+      id: Date.now(), 
+      text: newTask 
+    };
+
+    setColumns((prev) => ({ ...prev || [] }, { ...prev || [], todo: [...(prev.todo || []), task] }));
     setNewTask("");
   };
 
@@ -62,7 +75,8 @@ export default function KanbanBoard() {
           key={task.id}
           draggable
           onDragStart={() => onDragStart(task, key)}
-          className="bg-white rounded-xl shadow p-3 cursor-grab"
+          className={`rounded-xl shadow p-3 cursor-grab border hover:scale-[1.2] transition ${
+    columnColors[key]}`}
         >
           {task.text}
         </div>
@@ -73,7 +87,7 @@ export default function KanbanBoard() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Kanban Task Board</h1>
+      <h1 className="text-3xl font-bold mb-6">Task Board</h1>
 
       <div className="flex gap-2 mb-6">
         <Input
@@ -84,7 +98,7 @@ export default function KanbanBoard() {
         <Button onClick={addTask}>Add</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {renderColumn("To Do", "todo")}
         {renderColumn("In Progress", "inProgress")}
         {renderColumn("In Review", "inReview")}
