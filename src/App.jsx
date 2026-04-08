@@ -3,119 +3,95 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 
-function App() {
-  const [count, setCount] = useState(0)
+const initialData = {
+  toDo: [],
+  inProgress: [],
+  inReview: [],
+  done: []
+};
+
+export default function KanbanBoard() {
+  const [columns, setColumns] = useState(initialData);
+  const [newTask, setNewTask] = useState("");
+  const [draggedTask, setDraggedTask] = useState(null);
+
+  const addTask = () => {
+    if (!newTask.trim()) return;
+    const task = { id: Date.now(), text: newTask };
+    setColumns({ ...columns, todo: [...columns.todo, task] });
+    setNewTask("");
+  };
+
+  const onDragStart = (task, fromColumn) => {
+    setDraggedTask({ ...task, fromColumn });
+  };
+
+  const onDrop = (toColumn) => {
+    if (!draggedTask) return;
+
+    const updatedFrom = columns[draggedTask.fromColumn].filter(
+      (t) => t.id !== draggedTask.id
+    );
+    const updatedTo = [...columns[toColumn], draggedTask];
+
+    setColumns({
+      ...columns,
+      [draggedTask.fromColumn]: updatedFrom,
+      [toColumn]: updatedTo
+    });
+
+    setDraggedTask(null);
+  };
+
+  const renderColumn = (title, key) => (
+    <div
+      className="flex-1 bg-gray-100 rounded-2xl p-4 min-h-[400px]"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={() => onDrop(key)}
+    >
+      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+      <div className="space-y-3">
+        {columns[key].map((task) => (
+          <motion.div
+            key={task.id}
+            draggable
+            onDragStart={() => onDragStart(task, key)}
+            whileHover={{ scale: 1.03 }}
+          >
+            <Card className="cursor-grab active:cursor-grabbing shadow-md">
+              <CardContent className="p-3 text-sm">
+                {task.text}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Kanban Task Board</h1>
 
-      <div className="ticks"></div>
+      <div className="flex gap-2 mb-6">
+        <Input
+          placeholder="Add a new task..."
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+        />
+        <Button onClick={addTask}>Add</Button>
+      </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {renderColumn("To Do", "todo")}
+        {renderColumn("In Progress", "inProgress")}
+        {renderColumn("Done", "done")}
+      </div>
+    </div>
+  );
 }
-
-export default App
