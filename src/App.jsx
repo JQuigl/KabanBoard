@@ -16,28 +16,54 @@ const initialData = {
 };
 
 const columnColors = {
-  todo: "bg-yellow-100 border-yellow-300",
-  inProgress: "bg-blue-100 border-blue-300",
-  inReview: "bg-purple-100 border-purple-300",
+  todo: "bg-orange-100",
+  inProgress: "bg-blue-100",
+  inReview: "bg-purple-100",
   done: "bg-green-100 border-green-300",
+};
+
+const priorityBorder = {
+  low: "border-green-400",
+  medium: "border-yellow-400",
+  high: "border-red-400",
 };
 
 export default function KanbanBoard() {
   const [columns, setColumns] = useState(initialData);
-  const [newTask, setNewTask] = useState("");
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    priority: "Medium",
+    dueDate: "",
+  });
   const [draggedTask, setDraggedTask] = useState(null);
 
+  const handleChange = (e) => {
+    setNewTask({
+      ...newTask,
+      [e.target.name]: e.target.value,
+    });
+  };
+  
   const addTask = () => {
-    console.log("clicked");
-    if (!newTask.trim()) return;
+    if (!newTask.title.trim()) return;
 
     const task = { 
       id: Date.now(), 
-      text: newTask 
+      ...newTask,
     };
 
-    setColumns((prev) => ({ ...prev || [] }, { ...prev || [], todo: [...(prev.todo || []), task] }));
-    setNewTask("");
+    setColumns((prev) => ({ 
+      ...prev, 
+      todo: [...(prev.todo || []), task],
+    }));
+
+    setNewTask({
+      title: "",
+      description: "",
+      priority: "medium",
+      dueDate: "",
+    });
   };
 
   const onDragStart = (task, fromColumn) => {
@@ -75,10 +101,33 @@ export default function KanbanBoard() {
           key={task.id}
           draggable
           onDragStart={() => onDragStart(task, key)}
-          className={`rounded-xl shadow p-3 cursor-grab border hover:scale-[1.2] transition ${
+          className={`rounded-xl shadow p-3 cursor-grab border hover:scale-[1.2] transition border ${
+  priorityBorder[task.priority]} ${
     columnColors[key]}`}
         >
-          {task.text}
+          <div className="font-semibold text-sm">
+            {task.title}
+          </div>
+
+          {task.description && (
+            <div className="text-xs text-gray-600 mt-1">
+              {task.description}
+            </div>
+          )}
+
+          <div className="flex justify-between text-xs mt-2">
+            <span>
+              {task.priority === "high" && "High"}
+              {task.priority === "medium" && "Medium"}
+              {task.priority === "low" && "Low"}
+            </span>
+
+            {task.dueDate && (
+              <span className="text-gray-500">
+                📅 {task.dueDate}
+              </span>
+            )}
+          </div>
         </div>
       ))}
     </div>
@@ -88,14 +137,51 @@ export default function KanbanBoard() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Task Board</h1>
-
-      <div className="flex gap-2 mb-6">
-        <Input
-          placeholder="Add a new task..."
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
+      
+      <div className="grid gap-2 mb-6">
+        <input
+          name="title"
+          value={newTask.title}
+          onChange={handleChange}
+          placeholder="Task title"
+          className="border p-2 rounded"
         />
-        <Button onClick={addTask}>Add</Button>
+
+        <textarea
+          name="description"
+          value={newTask.description}
+          onChange={handleChange}
+          placeholder="Description (optional)"
+          className="border p-2 rounded"
+        />
+
+        <div className="flex gap-2">
+          <select
+            name="priority"
+            value={newTask.priority}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+
+          <input
+            type="date"
+            name="dueDate"
+            value={newTask.dueDate}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          />
+
+          <button
+            onClick={addTask}
+            className="bg-black text-white px-4 rounded"
+          >
+            Add Task
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
