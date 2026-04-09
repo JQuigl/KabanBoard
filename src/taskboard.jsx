@@ -252,7 +252,21 @@ export default function KanbanBoard() {
   };
 
   // STAT TRACKING \\
-  
+  const allTasks = [
+    ...columns.todo,
+    ...columns.inProgress,
+    ...columns.inReview,
+    ...columns.done,
+  ];
+
+  const totalTasks = allTasks.length;
+
+  const completedTasks = columns.done.length;
+
+  const overdueTasks = allTasks.filter((task) => {
+    if (!task.due_date) return false;
+    return new Date(task.due_date) < new Date();
+  }).length;
 
 
   const renderColumn = (title, key) => (
@@ -374,6 +388,28 @@ export default function KanbanBoard() {
         {renderColumn("In Review", "inReview")}
         {renderColumn("Done", "done")}
       </div>
+
+      <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-300 shadow rounded-xl p-4 text-center">
+          <h3 className="text-black-500 text-sm">Total Tasks</h3>
+          <p className="text-2xl font-bold">{totalTasks}</p>
+        </div>
+
+        <div className="bg-green-300 shadow rounded-xl p-4 text-center">
+          <h3 className="text-black-500 text-sm">Completed</h3>
+          <p className="text-2xl font-bold text-black-600">
+            {completedTasks}
+          </p>
+        </div>
+
+        <div className="bg-red-300 shadow rounded-xl p-4 text-center">
+          <h3 className="text-black-500 text-sm">Overdue</h3>
+          <p className="text-2xl font-bold text-black-600">
+            {overdueTasks}
+          </p>
+        </div>
+      </div>
+
     </div>
   );
 }
