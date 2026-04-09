@@ -30,6 +30,7 @@ export default function Login() {
   };
 
   const handleGuestLogin = async () => {
+    console.log("Attempting guest login...");
     const { data, error } = await supabase.auth.signInAnonymously();
 
     if (error) {

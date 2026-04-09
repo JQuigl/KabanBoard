@@ -57,7 +57,7 @@ export default function KanbanBoard() {
     };
 
     data.forEach((task) => {
-      grouped[task.status?.toLowerCase()]?.push(task);
+      grouped[task.status]?.push(task);
     });
 
     setColumns(grouped);
@@ -162,9 +162,11 @@ export default function KanbanBoard() {
       title: newTask.title,
       description: newTask.description,
       priority: newTask.priority,
-      due_date: newTask.due_date,
+      due_date: newTask.due_date || null,
       status: "todo",
       user_id: user.id,
+      is_guest_task: user.is_anonymous,
+      created_by_authenticated_user: !user.is_anonymous,
       assignee_id: user.id, // default = creator (you can change later)
       created_at: new Date().toISOString(),
     };
@@ -172,7 +174,7 @@ export default function KanbanBoard() {
     const { data, error } = await supabase
     .from("Tasks")
     .insert([task])
-    .select();
+    .select("*");
 
     if (error) {
       console.error(error);
