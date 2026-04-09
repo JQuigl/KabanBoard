@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
-import { createClient } from '@/lib/client'
+import { supabase } from '@/lib/client'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,7 +18,6 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
