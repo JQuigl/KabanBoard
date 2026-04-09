@@ -30,18 +30,26 @@ export default function Login() {
   };
 
   const handleGuestLogin = async () => {
-    console.log("Attempting guest login...");
-    const { data, error } = await supabase.auth.signInAnonymously();
+    setLoading(true);
+    setError("");
+
+    const { error } = await supabase.auth.signInAnonymously();
 
     if (error) {
+        setLoading(false);
         console.error("Guest login failed:", error);
+        setError(error.message);
         return;
     }
 
-    console.log("Guest user:", data.user);
+    const { data } = await supabase.auth.getSession();
 
-    navigate("/");
-    };
+    setLoading(false);
+
+    if (data.session) {
+        navigate("/");
+    }
+  };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">

@@ -64,14 +64,20 @@ export default function KanbanBoard() {
   };
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
+    const initAuth = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+
+      if (!sessionData.session) {
+        const { data } = await supabase.auth.signInAnonymously();
+        setUser(data.user);
+      } else {
+        setUser(sessionData.session.user);
+      }
     };
 
-    getUser();
+    initAuth();
 
-    const checkUser = async () => {
+    /*const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
 
       if (!data.user) {
@@ -79,7 +85,7 @@ export default function KanbanBoard() {
       }
     };
 
-    checkUser();
+    checkUser();*/
 
     fetchTasks();
     const channel = supabase
@@ -157,6 +163,7 @@ export default function KanbanBoard() {
   const addTask = async () => { 
 
     if (!newTask.title.trim()) return;
+    if (!user) return;
 
     const task = {
       title: newTask.title,
@@ -296,12 +303,21 @@ export default function KanbanBoard() {
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center">Task Board</h1>
       
-      <button
-        onClick={handleLogout}
-        className="absolute right-6 top-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-      >
-        Logout
-      </button>
+      {user?.is_anonymous ? (
+        <button
+          onClick={() => (window.location.href = "/login")}
+          className="absolute right-6 top-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Login
+        </button>
+      ) : (
+        <button
+          onClick={handleLogout}
+          className="absolute right-6 top-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+        >
+          Logout
+        </button>
+      )}
 
       <div className="grid gap-2 mb-6">
         <input

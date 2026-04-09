@@ -5,19 +5,40 @@ import { useNavigate } from "react-router-dom";
 export default function AuthenticatedRoute({ children }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getUser();
+    const initAuth = async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
 
-      if (!data?.user) {
-        navigate("/login");
-      } else {
+      // ✅ If session exists → allow access
+      if (sessionData.session) {
         setLoading(false);
+        return;
       }
+
+      // 🚀 NO SESSION → auto create guest session
+      const { error } = await supabase.auth.signInAnonymously();
+
+      if (error) {
+        console.error("Guest login failed:", error);
+      }
+
+      setLoading(false);
     };
 
-    checkAuth();
+    initAuth();
+
+    // keep auth state in sync
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      () => {
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   if (loading) return <div>Loading...</div>;
